@@ -1,0 +1,6 @@
+@FlowCash_HostAddress = http://localhost:5010
+
+GET {{FlowCash_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
