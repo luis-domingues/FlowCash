@@ -1,9 +1,11 @@
 using FlowCash.Data;
+using FlowCash.Serivces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<UserServices>();
 builder.Services.AddDbContext<FlowCashContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
