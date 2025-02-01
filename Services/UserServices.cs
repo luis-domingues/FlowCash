@@ -7,10 +7,12 @@ namespace FlowCash.Serivces;
 public class UserServices
 {
     private readonly FlowCashContext _context;
+    private readonly TokenService _tokenService;
 
-    public UserServices(FlowCashContext context)
+    public UserServices(FlowCashContext context, TokenService tokenService)
     {
         _context = context;
+        _tokenService = tokenService;
     }
     
     //register user 
@@ -26,12 +28,12 @@ public class UserServices
         return user;
     }
 
-    public async Task<bool> ValidateUserAsync(string email, string password)
+    public async Task<string?> ValidateUserAsync(string email, string password)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        if (user == null) return false;
-
-        return BCrypt.Net.BCrypt.Verify(password, user.Password);
+        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password)) return null;
+        
+        return _tokenService.GenerateToken(user.Email);
     }
 
     //get all users
