@@ -1,5 +1,7 @@
 using FlowCash.Models;
 using FlowCash.Serivces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlowCash.Controllers;
@@ -33,4 +35,23 @@ public class UserController : ControllerBase
         }
     }
     
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var token = await _services.ValidateUserAsync(request.Email, request.Password);
+        if (token == null)
+        {
+            return Unauthorized(new { message = "Email ou senha inválidos." });
+        }
+
+        return Ok(new { token });
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> GetUser()
+    {
+        var users = await _services.GetAllUsersAsync();
+        return Ok(users);
+    }
 }
