@@ -3,6 +3,7 @@ using FlowCash.Serivces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using ResetPasswordRequest = FlowCash.DTOs.ResetPasswordRequest;
 
 namespace FlowCash.Controllers;
 
@@ -39,12 +40,27 @@ public class UserController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var token = await _services.ValidateUserAsync(request.Email, request.Password);
-        if (token == null)
-        {
-            return Unauthorized(new { message = "Email ou senha inválidos." });
-        }
-
+        if (token == null) return Unauthorized(new { message = "Email ou senha inválidos." });
+        
         return Ok(new { token });
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var token = await _services.GeneratePasswordResetTokenAsync(request.Email);
+        if (token == null) return BadRequest(new { message = "E-mail não encontrado." });
+
+        return Ok(new { message = "Link de recuperação será enviado ao e-mail" });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var success = await _services.ResetPasswordAsync(request.Token, request.NewPassword);
+        if(!success) return BadRequest(new { message = "Token inválido ou expirado." });
+        
+        return Ok(new { message = "Senha redefinida com sucesso!" });
     }
 
     [HttpGet]
