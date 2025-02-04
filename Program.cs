@@ -28,6 +28,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<TokenServices>();
+builder.Services.AddScoped<EmailServices>();
 
 builder.Services.AddDbContext<FlowCashContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
