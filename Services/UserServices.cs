@@ -9,11 +9,13 @@ public class UserServices
 {
     private readonly FlowCashContext _context;
     private readonly TokenServices _tokenServices;
+    private readonly EmailServices _emailServices;
 
-    public UserServices(FlowCashContext context, TokenServices tokenServices)
+    public UserServices(FlowCashContext context, TokenServices tokenServices, EmailServices emailServices)
     {
         _context = context;
         _tokenServices = tokenServices;
+        _emailServices = emailServices;
     }
     
     //register user 
@@ -38,10 +40,10 @@ public class UserServices
     }
 
     //recovery token
-    public async Task<string?> GeneratePasswordResetTokenAsync(string email)
+    public async Task<bool> GeneratePasswordResetTokenAsync(string email)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        if (user == null) return null;
+        if (user == null) return false;
         
         //generate 32 byte token and convert to string base64
         var token = RandomNumberGenerator.GetBytes(32);
@@ -51,7 +53,8 @@ public class UserServices
         user.ResetTokenExpiration = DateTime.UtcNow.AddMinutes(30);
 
         await _context.SaveChangesAsync();
-        return resetToken;
+
+        return await _emailServices.SendPasswordResetEmailAsync(email, resetToken);
     }
 
     public async Task<bool> ResetPasswordAsync(string token, string newPassword)
